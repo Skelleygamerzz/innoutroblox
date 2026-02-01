@@ -68,6 +68,7 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            padding-bottom: 10rem;
             z-index: 1;
         }
 
@@ -230,6 +231,124 @@
             animation: sway 3s ease-in-out infinite;
         }
 
+        /* Music Player Styles */
+        .music-player {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 450px;
+            background: var(--white);
+            border: 4px solid var(--red);
+            padding: 1.5rem;
+            z-index: 200;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards;
+            box-shadow: 8px 8px 0px var(--yellow),
+                        8px 8px 0px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-info {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .song-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--red);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.05em;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .player-btn {
+            background: var(--white);
+            border: 3px solid var(--dark);
+            color: var(--dark);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.25rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-btn:hover {
+            background: var(--red);
+            border-color: var(--red);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .player-btn.play-btn {
+            font-size: 1.5rem;
+            width: 60px;
+            height: 60px;
+            background: var(--red);
+            border-color: var(--red);
+            color: var(--white);
+        }
+
+        .player-btn.play-btn:hover {
+            background: var(--yellow);
+            border-color: var(--yellow);
+            color: var(--dark);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--cream);
+            border: 2px solid var(--dark);
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--red);
+            border: 2px solid var(--dark);
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--red);
+            border: 2px solid var(--dark);
+            cursor: pointer;
+        }
+
+        .volume-icon {
+            font-size: 1.25rem;
+        }
+
         @keyframes popIn {
             to {
                 opacity: 1;
@@ -241,6 +360,12 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
             }
         }
 
@@ -259,10 +384,33 @@
             .palm-trees {
                 display: none;
             }
+
+            .music-player {
+                width: 90%;
+                bottom: 1rem;
+                padding: 1rem;
+            }
+
+            .song-title {
+                font-size: 0.875rem;
+            }
+
+            .player-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .player-btn.play-btn {
+                width: 48px;
+                height: 48px;
+            }
         }
     </style>
 </head>
 <body>
+    <audio id="audioPlayer" preload="auto"></audio>
+    
     <div class="bg-wrapper">
         <div class="bg-blur"></div>
         <div class="red-overlay"></div>
@@ -310,6 +458,25 @@
         <div class="palm-trees">🌴</div>
     </div>
 
+    <!-- Music Player -->
+    <div class="music-player">
+        <div class="player-info">
+            <div class="song-title" id="songTitle">Loading...</div>
+        </div>
+        
+        <div class="player-controls">
+            <button class="player-btn" id="prevBtn">⏮</button>
+            <button class="player-btn play-btn" id="playBtn">▶</button>
+            <button class="player-btn" id="nextBtn">⏭</button>
+            <button class="player-btn" id="muteBtn">🔊</button>
+        </div>
+
+        <div class="volume-control">
+            <span class="volume-icon">🔉</span>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+    </div>
+
     <script>
         // Add some fun interaction
         document.querySelectorAll('.link-button').forEach(button => {
@@ -319,6 +486,134 @@
                     : 'translateY(-4px) rotate(1deg)';
             });
         });
+
+        // Song list
+        const songs = [
+            { title: "Latto - Big Energy", file: "Latto - Big Energy (Official Video).mp3" },
+            { title: "Cities", file: "Cities.mp3" },
+            { title: "Ariana Grande - NASA", file: "Ariana Grande - NASA (Audio).mp3" },
+            { title: "Fergie - Glamorous ft. Ludacris", file: "Fergie - Glamorous ft. Ludacris.mp3" },
+            { title: "The Black Eyed Peas - Meet Me Halfway", file: "The Black Eyed Peas - Meet Me Halfway (Official Music Video).mp3" }
+        ];
+
+        // Get elements
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const songTitle = document.getElementById('songTitle');
+
+        // Player state
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isMuted = false;
+        let shuffledPlaylist = [];
+
+        // Shuffle array function
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Initialize shuffle on page load
+        function initializeShuffle() {
+            // Check if we have a saved shuffle order
+            const savedShuffle = localStorage.getItem('innoutPlaylistShuffle');
+            const lastVisit = localStorage.getItem('innoutLastVisit');
+            const now = Date.now();
+            
+            // If last visit was more than 1 hour ago or no saved shuffle, create new shuffle
+            if (!savedShuffle || !lastVisit || (now - parseInt(lastVisit)) > 3600000) {
+                shuffledPlaylist = shuffleArray(songs);
+                localStorage.setItem('innoutPlaylistShuffle', JSON.stringify(shuffledPlaylist));
+            } else {
+                shuffledPlaylist = JSON.parse(savedShuffle);
+            }
+            
+            localStorage.setItem('innoutLastVisit', now.toString());
+            currentIndex = 0;
+        }
+
+        // Load song
+        function loadSong() {
+            const song = shuffledPlaylist[currentIndex];
+            audio.src = song.file;
+            songTitle.textContent = song.title;
+        }
+
+        // Play/Pause toggle
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.textContent = '▶';
+            } else {
+                audio.play();
+                playBtn.textContent = '⏸';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Previous song
+        function prevSong() {
+            currentIndex = (currentIndex - 1 + shuffledPlaylist.length) % shuffledPlaylist.length;
+            loadSong();
+            if (isPlaying) {
+                audio.play();
+            }
+        }
+
+        // Next song
+        function nextSong() {
+            currentIndex = (currentIndex + 1) % shuffledPlaylist.length;
+            loadSong();
+            if (isPlaying) {
+                audio.play();
+            }
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            isMuted = !isMuted;
+            audio.muted = isMuted;
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+        }
+
+        // Update volume
+        function updateVolume() {
+            audio.volume = volumeSlider.value / 100;
+        }
+
+        // Event listeners
+        playBtn.addEventListener('click', togglePlay);
+        prevBtn.addEventListener('click', prevSong);
+        nextBtn.addEventListener('click', nextSong);
+        muteBtn.addEventListener('click', toggleMute);
+        volumeSlider.addEventListener('input', updateVolume);
+
+        // Auto-play next song when current ends
+        audio.addEventListener('ended', nextSong);
+
+        // Update play button when audio plays/pauses
+        audio.addEventListener('play', () => {
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+        });
+
+        audio.addEventListener('pause', () => {
+            isPlaying = false;
+            playBtn.textContent = '▶';
+        });
+
+        // Initialize
+        initializeShuffle();
+        loadSong();
+        updateVolume();
     </script>
 </body>
 </html>
